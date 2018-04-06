@@ -2,21 +2,28 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Ball controller
+/// </summary>
 public class BallController : MonoBehaviour
 {
     #region Members
+    // other controller needed
     Rigidbody rb = null;
     ScoreController scoreC;
     SoundController soundC;
-    private bool endOfGame = false;
-    private int nextPosition;
-
-    public float StartingSpeed = 10.0f;
-    public float SpeedModificatorOnEachRoboundLol = 1.05f;
-    public float Speed;
+    
+    private bool endOfGame = false;                             // While false, game continuing 
+    private int nextPosition;                                   // Int for know where the ball will going for the first rebound
+    public float StartingSpeed = 10.0f;                         // Init speed, for reset later
+    public float SpeedModificatorOnEachRobound = 1.05f;         // Modification for each robound
+    public float Speed;                                         // Speed of the ball
     #endregion
 
     #region Manipulators
+    /// <summary>
+    /// Starting the game here
+    /// </summary>
     public void Start()
     {
         Speed = StartingSpeed;
@@ -29,109 +36,128 @@ public class BallController : MonoBehaviour
             return;
         }
 
-        Randomize rnd = new Randomize();
+        Randomize rnd = new Randomize();                        
         int rand = rnd.Rand(0, 101);
         if (rand > 50)
             nextPosition = -1;
         else
             nextPosition = 1;
 
-        rb.position = new Vector3(20.0f, 0, 0);
+        // Ball working
+        rb.position = new Vector3(20.0f, 0, 0);                 
         rb.velocity = new Vector3(nextPosition, 0, 0) * StartingSpeed;
     }
 
-    public void Reset()
-    {
-        scoreC.Reset();
-        Start();
-    }
+
     // Update is called once per frame
     void Update()
     {
         if (Input.GetKey(KeyCode.Space) && endOfGame)
         {
+            endOfGame = false;
             Reset();
-        }
-        else if (Input.GetKey(KeyCode.Escape) && !endOfGame)
-        {
-            Debug.Log("Faudrait pouvoir restart #TODO");
         }
     }
 
+    // After the game, press space to reset
+    public void Reset()                                         
+    {
+        scoreC.Reset();
+        Start();
+    }
 
     private void OnCollisionEnter(Collision collision)
     {
         MapController mc = collision.gameObject.GetComponent<MapController>();
-        if (collision.gameObject.name == "West")
-        {
-            soundC.RunPointSound();
+
+        // Doing point, is a goal of this game
+        // And Adding point to score
+        // With particular sound 
+        if (collision.gameObject.name == "West")                                    
+        {                  
+            soundC.RunPointSound();                                                 
             endOfGame = scoreC.AddPoint(2);
-            ResetBall(2);
+            if (!endOfGame)
+                ResetBall(2);
+            else
+                EndOfGame();  
         }
-        else if (collision.gameObject.name == "East")
+        // Same as before
+        else if (collision.gameObject.name == "East")                               
         {
             soundC.RunPointSound();
             endOfGame = scoreC.AddPoint(1);
-            ResetBall(1);
+            if (!endOfGame)
+                ResetBall(1);
+            else
+                EndOfGame();
         }
+        // But, if we hit north or south wall, we need a different soud !
         else
-        {
             soundC.RunWallSound();
-        }
 
-        if (collision.gameObject.name.StartsWith("Paddle"))
+        // Paddle stuff
+        if (collision.gameObject.name.StartsWith("Paddle"))                         
         {
+            // We need a lot of objects
             PaddleController pc = collision.gameObject.GetComponent<PaddleController>();
             Transform cube = pc.transform.Find("Cube");
             Transform center = cube.Find("Center");
             Transform positif = cube.Find("Positif");
             Transform negatif = cube.Find("Negatif");
 
+            // Natural and correct direction after rebound
             Vector3 contactPoint = collision.contacts[0].point;
             Transform maxRange = (Vector3.Dot(positif.position, contactPoint - center.position) > 0) ? positif : negatif;
-
             float MaxDist = Mathf.Abs(maxRange.position.z - center.position.z);
             float distBetweenCenterContact = Mathf.Abs(contactPoint.z - center.position.z);
 
             if (MaxDist != 0)
                 rb.velocity = Vector3.Lerp(center.forward, maxRange.forward, distBetweenCenterContact / MaxDist).normalized * Speed;
 
+            // Some sounds
             soundC.RunPaddleSound();
-            pc.IncreesePaddleSpeed();
-            IncreeseBallSpeed();
-        }
 
+            // Decrease PaddleSpeed 
+            pc.DecreesePaddleSpeed();
+            // And increese BallSpeed \../
+            IncreeseBallSpeed();                                                    
+        }
         return;
     }
 
-    private void OnCollisionExit(Collision collision)
+    /// <summary>
+    /// Increese ballspeed here
+    /// </summary>    
+    private void IncreeseBallSpeed()                                                                               
     {
-        rb.velocity *= SpeedModificatorOnEachRoboundLol;
+        Speed *= SpeedModificatorOnEachRobound;
     }
 
-    private void IncreeseBallSpeed()
+    /// <summary>
+    /// Reset the ball's position after point
+    /// </summary>
+    /// <param name="winner"></param>
+    public void ResetBall(int winner)                                               
     {
-        Speed *= SpeedModificatorOnEachRoboundLol;
-    }
-
-    public void EndOfGame()
-    {
-        endOfGame = true;
-        rb.velocity = Vector3.zero;
-        rb.position = new Vector3(20.0f, 0, 0);
-    }
-
-    public void ResetBall(int winner)
-    {
-
         if (winner == 1)
             nextPosition = -1;
         else
             nextPosition = 1;
-
+        Speed = StartingSpeed;
         rb.position = new Vector3(20.0f, 0, 0);
-        rb.velocity = new Vector3(nextPosition, 0, 0) * StartingSpeed;
+        rb.velocity = new Vector3(nextPosition, 0, 0) * Speed;
+    }
+
+    /// <summary>
+    /// But we need to finish this game 
+    /// </summary>    
+    public void EndOfGame()                                                         
+    {
+        // Then when the maximum of point is reach : end !
+        rb.position = new Vector3(20.0f, 0, 0);
+        rb.velocity = new Vector3(0, 0, 0);
+        
     }
     #endregion
-
 }

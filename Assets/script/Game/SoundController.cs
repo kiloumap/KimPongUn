@@ -1,13 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// Music is essential for a good game
+/// </summary>
 public class SoundController : MonoBehaviour {
-    public bool haveSound           = true;
+    public bool haveSound           = true;                 // For desable sound 
 
-    [Header("General Sounds")]
+    [Header("General Sounds")]                              // Part "general"
     public AudioClip GeneralSound   = null;
 
-    [Header("Ball Sounds")]
+    [Header("Ball Sounds")]                                 // Specific sound
     public AudioClip WallSound      = null;
     public AudioClip PaddleSound    = null;
     public AudioClip VictorySound   = null;
@@ -15,19 +18,16 @@ public class SoundController : MonoBehaviour {
 
     AudioSource generalAudioSource  = null;
     AudioSource notifAudioSource    = null;
-    // Use this for initialization
+
     void Start ()
     {
         AddAudioSourceAndPlayGeneralSound();
     }
-	
-	// Update is called once per frame
-	void Update ()
-    {
-		
-	}
-
     #region General Sound & config source
+
+    /// <summary>
+    /// Create first source and play general sound
+    /// </summary>
     public void AddAudioSourceAndPlayGeneralSound()
     {
         if (!haveSound)
@@ -37,12 +37,19 @@ public class SoundController : MonoBehaviour {
         RunGeneralSound(GeneralSound);
     }
 
+    /// <summary>
+    /// Adding general source sound
+    /// </summary>
     public void AddAudioSource()
     {
         if (generalAudioSource == null)
             generalAudioSource = gameObject.AddComponent<AudioSource>();
     }
 
+    /// <summary>
+    /// And now running
+    /// </summary>
+    /// <param name="ac"></param>
     public void RunGeneralSound(AudioClip ac = null)
     {
         if (generalAudioSource == null)
@@ -56,6 +63,9 @@ public class SoundController : MonoBehaviour {
     }
     #endregion
 
+    /// <summary>
+    /// Notification => when ball hit a wall or ball
+    /// </summary>
     #region Hit sound
     public void AddSourceNotifSound()
     {
@@ -66,6 +76,9 @@ public class SoundController : MonoBehaviour {
             notifAudioSource = gameObject.AddComponent<AudioSource>();
     }
 
+    /// <summary>
+    /// Sound for a point
+    /// </summary>
     public void RunPointSound()
     {
         if (notifAudioSource == null)
@@ -75,6 +88,10 @@ public class SoundController : MonoBehaviour {
         notifAudioSource.Play();
     }
 
+
+    /// <summary>
+    /// When ball hit paddle
+    /// </summary>
     public void RunPaddleSound()
     {
         if (notifAudioSource == null)
@@ -85,6 +102,9 @@ public class SoundController : MonoBehaviour {
     }
     #endregion
 
+    /// <summary>
+    /// Or a wall from north of south
+    /// </summary>
     public void RunWallSound()
     {
         if (notifAudioSource == null)
@@ -94,6 +114,9 @@ public class SoundController : MonoBehaviour {
         notifAudioSource.Play();
     }
 
+    /// <summary>
+    /// Now the victryyy
+    /// </summary>
     public void RunVictorySound()
     {
         if (notifAudioSource == null)
