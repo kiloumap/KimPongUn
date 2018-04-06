@@ -1,0 +1,4 @@
+sceneSetups:
+- path: Assets/Scenes/pong_real.unity
+  isLoaded: 1
+  isActive: 1
